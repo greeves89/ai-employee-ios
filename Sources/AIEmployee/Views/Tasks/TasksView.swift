@@ -1,12 +1,21 @@
 import SwiftUI
 
 struct TasksView: View {
-    @ObservedObject var viewModel: TasksViewModel
+    @Bindable var viewModel: TasksViewModel
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.appBackground.ignoresSafeArea()
+                MeshGradient(width: 3, height: 3, points: [
+                    [0, 0], [0.5, 0], [1, 0],
+                    [0, 0.5], [0.5, 0.5], [1, 0.5],
+                    [0, 1], [0.5, 1], [1, 1]
+                ], colors: [
+                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+                ])
+                .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // Filter Bar
@@ -24,7 +33,6 @@ struct TasksView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                     }
-                    .background(Color.appBackground)
 
                     Divider()
                         .background(Color.appBorder)
@@ -35,15 +43,13 @@ struct TasksView: View {
                         LoadingView(message: "Aufgaben werden geladen...")
                         Spacer()
                     } else if viewModel.filteredTasks.isEmpty {
-                        Spacer()
-                        EmptyStateView(
-                            icon: "list.bullet.clipboard",
-                            title: "Keine Aufgaben",
-                            message: viewModel.filter == .all
+                        ContentUnavailableView(
+                            viewModel.filter == .all ? "Keine Aufgaben" : "Keine Aufgaben in dieser Kategorie",
+                            systemImage: "list.bullet.clipboard",
+                            description: Text(viewModel.filter == .all
                                 ? "Es gibt derzeit keine Aufgaben."
-                                : "Keine Aufgaben in dieser Kategorie."
+                                : "Keine Aufgaben in dieser Kategorie.")
                         )
-                        Spacer()
                     } else {
                         ScrollView {
                             // Stats
@@ -114,17 +120,13 @@ struct FilterChip: View {
         Button(action: action) {
             Text(label)
                 .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                .foregroundColor(isSelected ? .white : Color.appTextSecondary)
+                .foregroundStyle(isSelected ? .white : Color.appTextSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
-                .background(isSelected ? Color.appAccent : Color.appCard)
-                .cornerRadius(20)
+                .glassEffect(in: .capsule)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(
-                            isSelected ? Color.appAccent : Color.appBorder,
-                            lineWidth: 1
-                        )
+                    Capsule()
+                        .stroke(isSelected ? Color.appAccent : Color.clear, lineWidth: 1.5)
                 )
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
@@ -140,7 +142,6 @@ struct TaskCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
-                // Status Icon
                 ZStack {
                     Circle()
                         .fill(task.statusColor.opacity(0.15))
@@ -148,7 +149,7 @@ struct TaskCard: View {
 
                     Image(systemName: task.statusIcon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(task.statusColor)
+                        .foregroundStyle(task.statusColor)
                         .rotationEffect(.degrees(task.isRunning ? rotationAngle : 0))
                         .onAppear {
                             if task.isRunning {
@@ -163,64 +164,51 @@ struct TaskCard: View {
                     HStack {
                         Text(task.title)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .lineLimit(2)
 
                         Spacer()
 
-                        // Status Badge
                         Text(task.statusLabel)
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(task.statusColor)
+                            .foregroundStyle(task.statusColor)
                             .padding(.horizontal, 9)
                             .padding(.vertical, 4)
                             .background(task.statusColor.opacity(0.12))
-                            .cornerRadius(8)
+                            .clipShape(.rect(cornerRadius: 8))
                     }
 
-                    // Meta info
                     HStack(spacing: 12) {
                         if let agentName = task.agentName {
                             Label(agentName, systemImage: "cpu")
                                 .font(.system(size: 12))
-                                .foregroundColor(Color.appTextSecondary)
+                                .foregroundStyle(Color.appTextSecondary)
                         }
 
                         if let time = task.formattedCreatedAt {
                             Label(time, systemImage: "clock")
                                 .font(.system(size: 12))
-                                .foregroundColor(Color.appTextSecondary)
+                                .foregroundStyle(Color.appTextSecondary)
                         }
                     }
                 }
             }
 
-            // Running Progress Indicator
             if task.isRunning {
                 ProgressIndicatorBar()
             }
 
-            // Output Preview
             if let output = task.output, !output.isEmpty {
                 Text(output)
                     .font(.system(size: 12, design: .monospaced))
-                    .foregroundColor(Color.appTextSecondary)
+                    .foregroundStyle(Color.appTextSecondary)
                     .lineLimit(3)
                     .padding(10)
-                    .background(Color(hex: "0d1526"))
-                    .cornerRadius(8)
+                    .glassEffect(in: .rect(cornerRadius: 8))
             }
         }
         .padding(14)
-        .background(Color.appCard)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    task.isRunning ? Color.appAccent.opacity(0.3) : Color.appBorder,
-                    lineWidth: 1
-                )
-        )
+        .glassEffect(in: .rect(cornerRadius: 16))
     }
 }
 

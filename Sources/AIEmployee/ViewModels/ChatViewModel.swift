@@ -2,13 +2,14 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class ChatViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = []
-    @Published var inputText: String = ""
-    @Published var isLoading: Bool = false
-    @Published var isSending: Bool = false
-    @Published var isTyping: Bool = false
-    @Published var errorMessage: String? = nil
+@Observable
+final class ChatViewModel {
+    var messages: [ChatMessage] = []
+    var inputText: String = ""
+    var isLoading: Bool = false
+    var isSending: Bool = false
+    var isTyping: Bool = false
+    var errorMessage: String? = nil
 
     let agent: Agent
     private let webSocketClient = WebSocketClient.shared
@@ -52,10 +53,8 @@ final class ChatViewModel: ObservableObject {
         webSocketClient.connectToChat(agentId: agent.id, baseURL: baseURL) { [weak self] message in
             Task { @MainActor in
                 guard let self = self else { return }
-                // Remove typing indicator if present
                 self.messages.removeAll { $0.isTypingIndicator }
                 self.isTyping = false
-                // Don't add duplicates
                 if !self.messages.contains(where: { $0.id == message.id }) {
                     self.messages.append(message)
                 }
@@ -73,7 +72,6 @@ final class ChatViewModel: ObservableObject {
         isSending = true
         errorMessage = nil
 
-        // Add user message immediately
         let userMessage = ChatMessage(
             id: UUID().uuidString,
             role: "user",
@@ -82,18 +80,15 @@ final class ChatViewModel: ObservableObject {
         )
         messages.append(userMessage)
 
-        // Show typing indicator
         let typingMsg = ChatMessage.typingIndicator()
         messages.append(typingMsg)
         isTyping = true
 
         do {
             let response = try await APIClient.shared.sendMessage(agentId: agent.id, content: content)
-            // Remove typing indicator
             messages.removeAll { $0.isTypingIndicator }
             isTyping = false
 
-            // Add response if not already added via WebSocket
             if !messages.contains(where: { $0.id == response.id }) {
                 messages.append(response)
             }

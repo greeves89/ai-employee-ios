@@ -2,11 +2,12 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class AgentsViewModel: ObservableObject {
-    @Published var agents: [Agent] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    @Published var actionInProgress: Set<String> = []
+@Observable
+final class AgentsViewModel {
+    var agents: [Agent] = []
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
+    var actionInProgress: Set<String> = []
 
     private var pollingTask: Task<Void, Never>?
     private let pollingInterval: UInt64 = 10_000_000_000 // 10 seconds
@@ -60,7 +61,6 @@ final class AgentsViewModel: ObservableObject {
 
         do {
             try await APIClient.shared.startAgent(id: agent.id)
-            // Refresh after action
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             await loadAgents()
         } catch let error as APIError {

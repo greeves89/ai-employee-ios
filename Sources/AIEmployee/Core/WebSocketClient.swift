@@ -31,7 +31,8 @@ struct WebSocketMessage: Codable {
 // MARK: - WebSocket Client
 
 @MainActor
-final class WebSocketClient: NSObject, ObservableObject {
+@Observable
+final class WebSocketClient: NSObject {
     static let shared = WebSocketClient()
 
     private var chatTask: URLSessionWebSocketTask?
@@ -100,10 +101,8 @@ final class WebSocketClient: NSObject, ObservableObject {
                 case .failure(let error):
                     print("[WebSocket] Chat error: \(error.localizedDescription)")
                     self.isChatConnected = false
-                    // Retry after delay
                     try? await Task.sleep(nanoseconds: 3_000_000_000)
                     if self.isChatConnected == false, let handler = self.chatMessageHandler {
-                        // Reconnect if handler still set
                         _ = handler
                     }
                 }

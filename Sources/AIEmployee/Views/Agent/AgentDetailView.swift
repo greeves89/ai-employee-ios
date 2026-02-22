@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AgentDetailView: View {
     let agent: Agent
-    @ObservedObject var agentsVM: AgentsViewModel
+    @Bindable var agentsVM: AgentsViewModel
     @State private var selectedTab: Int = 0
     @State private var localAgent: Agent
 
@@ -14,12 +14,20 @@ struct AgentDetailView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground.ignoresSafeArea()
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Agent Header Card
                 VStack(spacing: 16) {
-                    // Agent Icon + Name
                     HStack(spacing: 16) {
                         ZStack {
                             Circle()
@@ -34,14 +42,16 @@ struct AgentDetailView: View {
                                 )
                                 .frame(width: 60, height: 60)
                                 .shadow(color: localAgent.isRunning ? Color(hex: "3b82f6").opacity(0.4) : .clear, radius: 12)
-                            Text("🤖")
+
+                            Image(systemName: "cpu.fill")
                                 .font(.system(size: 28))
+                                .foregroundStyle(.white)
                         }
 
                         VStack(alignment: .leading, spacing: 6) {
                             Text(localAgent.name)
                                 .font(.system(size: 22, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
 
                             StatusBadge(agent: localAgent)
                         }
@@ -89,7 +99,7 @@ struct AgentDetailView: View {
                     }
                 }
                 .padding(20)
-                .background(Color.appCard)
+                .glassEffect(in: .rect(cornerRadius: 0))
 
                 // Tab Picker
                 Picker("Ansicht", selection: $selectedTab) {
@@ -99,7 +109,6 @@ struct AgentDetailView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.appBackground)
 
                 // Tab Content
                 if selectedTab == 0 {
@@ -111,7 +120,7 @@ struct AgentDetailView: View {
         }
         .navigationTitle(localAgent.name)
         .navigationBarTitleDisplayMode(.inline)
-        .onReceive(agentsVM.$agents) { agents in
+        .onChange(of: agentsVM.agents) { _, agents in
             if let updated = agents.first(where: { $0.id == agent.id }) {
                 localAgent = updated
             }
@@ -142,22 +151,10 @@ struct DetailControlButton: View {
                 Text(label)
                     .font(.system(size: 13, weight: .semibold))
             }
-            .foregroundColor(disabled ? Color.appTextSecondary : color)
+            .foregroundStyle(disabled ? Color.appTextSecondary : color)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(
-                disabled
-                    ? Color.appCardSecondary
-                    : color.opacity(0.15)
-            )
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        disabled ? Color.appBorder : color.opacity(0.3),
-                        lineWidth: 1
-                    )
-            )
+            .glassEffect(in: .rect(cornerRadius: 12))
         }
         .disabled(disabled)
     }
@@ -186,14 +183,13 @@ struct AgentInfoView: View {
                     InfoSection(title: "Beschreibung") {
                         Text(desc)
                             .font(.system(size: 14))
-                            .foregroundColor(Color.appTextSecondary)
+                            .foregroundStyle(Color.appTextSecondary)
                             .padding(.vertical, 4)
                     }
                 }
             }
             .padding(16)
         }
-        .background(Color.appBackground)
     }
 }
 
@@ -205,15 +201,14 @@ struct InfoSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.appTextSecondary)
+                .foregroundStyle(Color.appTextSecondary)
                 .textCase(.uppercase)
                 .tracking(0.5)
 
             VStack(spacing: 0) {
                 content
             }
-            .background(Color.appCard)
-            .cornerRadius(14)
+            .glassEffect(in: .rect(cornerRadius: 14))
         }
     }
 }
@@ -228,18 +223,18 @@ struct InfoRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14))
-                .foregroundColor(Color.appAccent)
+                .foregroundStyle(Color.appAccent)
                 .frame(width: 20)
 
             Text(label)
                 .font(.system(size: 14))
-                .foregroundColor(Color.appTextSecondary)
+                .foregroundStyle(Color.appTextSecondary)
 
             Spacer()
 
             Text(value)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(valueColor)
+                .foregroundStyle(valueColor)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)

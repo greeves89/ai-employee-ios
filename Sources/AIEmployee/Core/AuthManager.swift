@@ -2,12 +2,13 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class AuthManager: ObservableObject {
+@Observable
+final class AuthManager {
     static let shared = AuthManager()
 
-    @Published var isLoggedIn: Bool = false
-    @Published var currentUser: User?
-    @Published var baseURL: String = ""
+    var isLoggedIn: Bool = false
+    var currentUser: User?
+    var baseURL: String = ""
 
     private let userDefaultsBaseURLKey = "ai_employee_base_url"
     private let userDefaultsUserEmailKey = "ai_employee_user_email"

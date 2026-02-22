@@ -2,14 +2,13 @@ import SwiftUI
 
 struct ChatView: View {
     let agent: Agent
-    @StateObject private var viewModel: ChatViewModel
-    @StateObject private var voiceManager = VoiceManager.shared
+    @State private var viewModel: ChatViewModel
+    @State private var voiceManager = VoiceManager.shared
     @State private var scrollProxy: ScrollViewProxy? = nil
-    @State private var showVoiceTranscript = false
 
     init(agent: Agent) {
         self.agent = agent
-        self._viewModel = StateObject(wrappedValue: ChatViewModel(agent: agent))
+        self._viewModel = State(initialValue: ChatViewModel(agent: agent))
     }
 
     var body: some View {
@@ -33,7 +32,6 @@ struct ChatView: View {
                     .padding(.vertical, 12)
                     .padding(.bottom, 4)
                 }
-                .background(Color.appBackground)
                 .onChange(of: viewModel.messages.count) { _, _ in
                     scrollToBottom(proxy: proxy)
                 }
@@ -48,10 +46,10 @@ struct ChatView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "waveform")
                         .font(.system(size: 12))
-                        .foregroundColor(Color.appError)
+                        .foregroundStyle(Color.appError)
                     Text(voiceManager.transcript)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .lineLimit(3)
                 }
                 .padding(12)
@@ -70,18 +68,18 @@ struct ChatView: View {
             if let error = viewModel.errorMessage {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundColor(Color.appError)
+                        .foregroundStyle(Color.appError)
                         .font(.system(size: 14))
                     Text(error)
                         .font(.system(size: 13))
-                        .foregroundColor(Color.appError)
+                        .foregroundStyle(Color.appError)
                     Spacer()
                     Button {
                         viewModel.clearError()
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 12))
-                            .foregroundColor(Color.appTextSecondary)
+                            .foregroundStyle(Color.appTextSecondary)
                     }
                 }
                 .padding(.horizontal, 14)
@@ -120,13 +118,13 @@ struct MessageBubble: View {
             if message.isUser { Spacer(minLength: 40) }
 
             if !message.isUser {
-                // Agent Avatar
                 ZStack {
                     Circle()
                         .fill(Color(hex: "1e293b"))
                         .frame(width: 30, height: 30)
-                    Text("🤖")
+                    Image(systemName: "cpu.fill")
                         .font(.system(size: 14))
+                        .foregroundStyle(Color.appAccent)
                 }
             }
 
@@ -136,34 +134,35 @@ struct MessageBubble: View {
                 } else {
                     Text(message.content)
                         .font(.system(size: 15))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .background(message.bubbleColor)
-                        .cornerRadius(18, corners: message.isUser
-                            ? [.topLeft, .topRight, .bottomLeft]
-                            : [.topLeft, .topRight, .bottomRight]
-                        )
+                        .clipShape(.rect(
+                            topLeadingRadius: 18,
+                            bottomLeadingRadius: message.isUser ? 18 : 4,
+                            bottomTrailingRadius: message.isUser ? 4 : 18,
+                            topTrailingRadius: 18
+                        ))
                         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                 }
 
                 if !message.formattedTime.isEmpty {
                     Text(message.formattedTime)
                         .font(.system(size: 11))
-                        .foregroundColor(Color.appTextSecondary)
+                        .foregroundStyle(Color.appTextSecondary)
                 }
             }
             .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: message.isUser ? .trailing : .leading)
 
             if message.isUser {
-                // User Avatar
                 ZStack {
                     Circle()
                         .fill(Color(hex: "1e40af"))
                         .frame(width: 30, height: 30)
                     Image(systemName: "person.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                 }
             }
 
@@ -179,7 +178,7 @@ struct TypingIndicator: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(0..<3) { index in
+            ForEach(0..<3, id: \.self) { index in
                 Circle()
                     .fill(Color.appTextSecondary)
                     .frame(width: 7, height: 7)
@@ -192,8 +191,7 @@ struct TypingIndicator: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color(hex: "1e293b"))
-        .cornerRadius(18)
+        .glassEffect(in: .rect(cornerRadius: 18))
         .onAppear {
             phase = 0
             withAnimation {
@@ -206,8 +204,8 @@ struct TypingIndicator: View {
 // MARK: - Input Bar
 
 struct InputBar: View {
-    @ObservedObject var viewModel: ChatViewModel
-    @ObservedObject var voiceManager: VoiceManager
+    @Bindable var viewModel: ChatViewModel
+    @Bindable var voiceManager: VoiceManager
     @State private var pulseAnimation = false
 
     var body: some View {
@@ -215,15 +213,10 @@ struct InputBar: View {
             // Text Input
             TextField("Nachricht...", text: $viewModel.inputText, axis: .vertical)
                 .font(.system(size: 15))
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.appCard)
-                .cornerRadius(22)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.appBorder, lineWidth: 1)
-                )
+                .glassEffect(in: .rect(cornerRadius: 22))
                 .lineLimit(4)
 
             // Voice Button
@@ -243,15 +236,8 @@ struct InputBar: View {
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(voiceManager.isRecording ? Color.appError : Color.appCard)
                             .frame(width: 44, height: 44)
-                            .overlay(
-                                Circle()
-                                    .stroke(
-                                        voiceManager.isRecording ? Color.appError : Color.appBorder,
-                                        lineWidth: 1
-                                    )
-                            )
+                            .glassEffect(in: .circle)
                             .scaleEffect(pulseAnimation && voiceManager.isRecording ? 1.15 : 1.0)
                             .animation(
                                 voiceManager.isRecording
@@ -262,7 +248,7 @@ struct InputBar: View {
 
                         Image(systemName: voiceManager.isRecording ? "waveform" : "mic.fill")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(voiceManager.isRecording ? .white : Color.appTextSecondary)
+                            .foregroundStyle(voiceManager.isRecording ? Color.appError : Color.appTextSecondary)
                     }
                 }
                 .onChange(of: voiceManager.isRecording) { _, isRecording in
@@ -290,7 +276,7 @@ struct InputBar: View {
                     } else {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 17, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                     }
                 }
             }
@@ -298,34 +284,12 @@ struct InputBar: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color(hex: "0d1526"))
+        .background(.ultraThinMaterial)
         .overlay(
             Rectangle()
                 .fill(Color.appBorder)
                 .frame(height: 0.5),
             alignment: .top
         )
-    }
-}
-
-// MARK: - Corner Radius Extension
-
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
     }
 }

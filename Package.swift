@@ -1,10 +1,10 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
     name: "AIEmployee",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v26)
     ],
     products: [
         .executable(
@@ -16,8 +16,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "AIEmployee",
-            path: "Sources/AIEmployee",
-            resources: []
+            path: "Sources/AIEmployee"
         )
     ]
 )

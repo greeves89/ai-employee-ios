@@ -4,13 +4,14 @@ import AVFoundation
 import SwiftUI
 
 @MainActor
-final class VoiceManager: ObservableObject {
+@Observable
+final class VoiceManager {
     static let shared = VoiceManager()
 
-    @Published var isRecording: Bool = false
-    @Published var transcript: String = ""
-    @Published var isAvailable: Bool = false
-    @Published var permissionDenied: Bool = false
+    var isRecording: Bool = false
+    var transcript: String = ""
+    var isAvailable: Bool = false
+    var permissionDenied: Bool = false
 
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -25,7 +26,6 @@ final class VoiceManager: ObservableObject {
     // MARK: - Setup
 
     private func setupSpeechRecognizer() {
-        // Try German first, fallback to English
         if let germanRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "de-DE")),
            germanRecognizer.isAvailable {
             speechRecognizer = germanRecognizer
@@ -74,11 +74,9 @@ final class VoiceManager: ObservableObject {
             return
         }
 
-        // Stop any existing task
         recognitionTask?.cancel()
         recognitionTask = nil
 
-        // Configure audio session
         let audioSession = AVAudioSession.sharedInstance()
         do {
             try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
@@ -116,11 +114,9 @@ final class VoiceManager: ObservableObject {
         recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             Task { @MainActor in
                 guard let self = self else { return }
-
                 if let result = result {
                     self.transcript = result.bestTranscription.formattedString
                 }
-
                 if error != nil || (result?.isFinal ?? false) {
                     self.stopRecording()
                 }

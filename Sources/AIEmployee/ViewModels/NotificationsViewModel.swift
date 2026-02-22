@@ -2,10 +2,11 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class NotificationsViewModel: ObservableObject {
-    @Published var notifications: [AINotification] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+@Observable
+final class NotificationsViewModel {
+    var notifications: [AINotification] = []
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
 
     private let webSocketClient = WebSocketClient.shared
 
@@ -79,7 +80,6 @@ final class NotificationsViewModel: ObservableObject {
                 notifications[index] = updated
             }
         } catch {
-            // Silently ignore mark-read errors
             print("[NotificationsVM] Mark read error: \(error)")
         }
     }

@@ -2,11 +2,12 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class ApprovalsViewModel: ObservableObject {
-    @Published var approvals: [Approval] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    @Published var processingIds: Set<String> = []
+@Observable
+final class ApprovalsViewModel {
+    var approvals: [Approval] = []
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
+    var processingIds: Set<String> = []
 
     var pendingCount: Int {
         approvals.count

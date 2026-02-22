@@ -2,13 +2,14 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class AuthViewModel: ObservableObject {
-    @Published var email: String = ""
-    @Published var password: String = ""
-    @Published var serverURL: String = ""
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    @Published var showError: Bool = false
+@Observable
+final class AuthViewModel {
+    var email: String = ""
+    var password: String = ""
+    var serverURL: String = ""
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
+    var showError: Bool = false
 
     private let authManager: AuthManager
 

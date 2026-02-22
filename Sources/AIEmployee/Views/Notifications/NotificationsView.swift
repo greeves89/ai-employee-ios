@@ -1,25 +1,33 @@
 import SwiftUI
 
 struct NotificationsView: View {
-    @ObservedObject var viewModel: NotificationsViewModel
+    @Bindable var viewModel: NotificationsViewModel
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.appBackground.ignoresSafeArea()
+                MeshGradient(width: 3, height: 3, points: [
+                    [0, 0], [0.5, 0], [1, 0],
+                    [0, 0.5], [0.5, 0.5], [1, 0.5],
+                    [0, 1], [0.5, 1], [1, 1]
+                ], colors: [
+                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+                ])
+                .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.notifications.isEmpty {
                     LoadingView(message: "Benachrichtigungen werden geladen...")
                 } else if viewModel.notifications.isEmpty && !viewModel.isLoading {
-                    EmptyStateView(
-                        icon: "bell.slash.fill",
-                        title: "Keine Benachrichtigungen",
-                        message: "Sie haben noch keine Benachrichtigungen erhalten."
+                    ContentUnavailableView(
+                        "Keine Benachrichtigungen",
+                        systemImage: "bell.slash.fill",
+                        description: Text("Sie haben noch keine Benachrichtigungen erhalten.")
                     )
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                            // Unread Section
                             if !viewModel.unreadNotifications.isEmpty {
                                 Section {
                                     ForEach(viewModel.unreadNotifications) { notification in
@@ -36,7 +44,6 @@ struct NotificationsView: View {
                                 }
                             }
 
-                            // Read Section
                             if !viewModel.readNotifications.isEmpty {
                                 Section {
                                     ForEach(viewModel.readNotifications) { notification in
@@ -57,7 +64,6 @@ struct NotificationsView: View {
                     }
                 }
 
-                // Error
                 if let error = viewModel.errorMessage {
                     VStack {
                         Spacer()
@@ -76,7 +82,7 @@ struct NotificationsView: View {
                         } label: {
                             Text("Alle gelesen")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.appAccent)
+                                .foregroundStyle(Color.appAccent)
                         }
                     }
                 }
@@ -97,14 +103,14 @@ struct SectionHeader: View {
         HStack {
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(Color.appTextSecondary)
+                .foregroundStyle(Color.appTextSecondary)
                 .textCase(.uppercase)
                 .tracking(0.5)
             Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color.appBackground)
+        .background(.ultraThinMaterial)
     }
 }
 
@@ -116,14 +122,11 @@ struct NotificationRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            // Unread Indicator + Icon
             HStack(spacing: 0) {
-                // Blue left border for unread
                 Rectangle()
                     .fill(isUnread ? Color.appAccent : Color.clear)
                     .frame(width: 3)
 
-                // Type Icon
                 ZStack {
                     Circle()
                         .fill(notification.typeColor.opacity(0.15))
@@ -131,7 +134,7 @@ struct NotificationRow: View {
 
                     Image(systemName: notification.typeIcon)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(notification.typeColor)
+                        .foregroundStyle(notification.typeColor)
                 }
                 .padding(.leading, 13)
             }
@@ -140,12 +143,11 @@ struct NotificationRow: View {
                 HStack {
                     Text(notification.title)
                         .font(.system(size: 15, weight: isUnread ? .semibold : .regular))
-                        .foregroundColor(isUnread ? .white : Color.appTextSecondary)
+                        .foregroundStyle(isUnread ? .white : Color.appTextSecondary)
                         .lineLimit(2)
 
                     Spacer()
 
-                    // Unread dot
                     if isUnread {
                         Circle()
                             .fill(Color.appAccent)
@@ -156,14 +158,14 @@ struct NotificationRow: View {
                 if let message = notification.message, !message.isEmpty {
                     Text(message)
                         .font(.system(size: 13))
-                        .foregroundColor(Color.appTextSecondary)
+                        .foregroundStyle(Color.appTextSecondary)
                         .lineLimit(3)
                 }
 
                 if !notification.formattedTime.isEmpty {
                     Text(notification.formattedTime)
                         .font(.system(size: 12))
-                        .foregroundColor(Color(hex: "475569"))
+                        .foregroundStyle(Color(hex: "475569"))
                 }
             }
         }

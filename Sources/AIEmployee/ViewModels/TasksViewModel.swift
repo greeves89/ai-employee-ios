@@ -2,11 +2,12 @@ import Foundation
 import SwiftUI
 
 @MainActor
-final class TasksViewModel: ObservableObject {
-    @Published var tasks: [AITask] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    @Published var filter: TaskFilter = .all
+@Observable
+final class TasksViewModel {
+    var tasks: [AITask] = []
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
+    var filter: TaskFilter = .all
 
     private var refreshTask: Task<Void, Never>?
 
@@ -73,7 +74,7 @@ final class TasksViewModel: ObservableObject {
         stopAutoRefresh()
         refreshTask = Task {
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 15_000_000_000) // 15 seconds
+                try? await Task.sleep(nanoseconds: 15_000_000_000)
                 await loadTasks()
             }
         }

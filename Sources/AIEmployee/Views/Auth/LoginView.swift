@@ -1,17 +1,21 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var viewModel = AuthViewModel()
-    @EnvironmentObject var authManager: AuthManager
+    @State private var viewModel = AuthViewModel()
+    @Environment(AuthManager.self) var authManager
 
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color(hex: "0a0f1e"), Color(hex: "0f172a"), Color(hex: "1e1b4b")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            // Liquid Glass background — dark navy MeshGradient
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
             .ignoresSafeArea()
 
             ScrollView {
@@ -32,76 +36,62 @@ struct LoginView: View {
                                 .frame(width: 90, height: 90)
                                 .shadow(color: Color(hex: "3b82f6").opacity(0.5), radius: 20, x: 0, y: 10)
 
-                            Text("🤖")
-                                .font(.system(size: 44))
+                            Image(systemName: "cpu.fill")
+                                .font(.system(size: 40, weight: .medium))
+                                .foregroundStyle(.white)
                         }
 
                         VStack(spacing: 6) {
                             Text("AI Employee")
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
 
                             Text("Ihr KI-Assistent")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(hex: "94a3b8"))
+                                .foregroundStyle(Color(hex: "94a3b8"))
                         }
                     }
 
-                    // Login Form
+                    // Login Form — glass card
                     VStack(spacing: 16) {
                         // Server URL
                         HStack(spacing: 12) {
                             Image(systemName: "globe")
-                                .foregroundColor(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color(hex: "3b82f6"))
                                 .frame(width: 20)
                             TextField("Server-URL (z.B. https://ai.example.com)", text: $viewModel.serverURL)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .keyboardType(.URL)
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
                         }
                         .padding(16)
-                        .background(Color(hex: "131929"))
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color(hex: "1e293b"), lineWidth: 1)
-                        )
+                        .glassEffect(in: .rect(cornerRadius: 14))
 
                         // Email
                         HStack(spacing: 12) {
                             Image(systemName: "envelope")
-                                .foregroundColor(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color(hex: "3b82f6"))
                                 .frame(width: 20)
                             TextField("E-Mail-Adresse", text: $viewModel.email)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .keyboardType(.emailAddress)
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
                         }
                         .padding(16)
-                        .background(Color(hex: "131929"))
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color(hex: "1e293b"), lineWidth: 1)
-                        )
+                        .glassEffect(in: .rect(cornerRadius: 14))
 
                         // Password
                         HStack(spacing: 12) {
                             Image(systemName: "lock")
-                                .foregroundColor(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color(hex: "3b82f6"))
                                 .frame(width: 20)
                             SecureField("Passwort", text: $viewModel.password)
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
                         }
                         .padding(16)
-                        .background(Color(hex: "131929"))
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color(hex: "1e293b"), lineWidth: 1)
-                        )
+                        .glassEffect(in: .rect(cornerRadius: 14))
                     }
                     .padding(.horizontal, 24)
 
@@ -109,19 +99,14 @@ struct LoginView: View {
                     if viewModel.showError, let error = viewModel.errorMessage {
                         HStack(spacing: 10) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(Color(hex: "ef4444"))
+                                .foregroundStyle(Color(hex: "ef4444"))
                             Text(error)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color(hex: "ef4444"))
+                                .foregroundStyle(Color(hex: "ef4444"))
                                 .multilineTextAlignment(.leading)
                         }
                         .padding(14)
-                        .background(Color(hex: "ef4444").opacity(0.1))
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(hex: "ef4444").opacity(0.3), lineWidth: 1)
-                        )
+                        .glassEffect(in: .rect(cornerRadius: 12))
                         .padding(.horizontal, 24)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -155,8 +140,8 @@ struct LoginView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .foregroundColor(.white)
-                        .cornerRadius(16)
+                        .foregroundStyle(.white)
+                        .clipShape(.rect(cornerRadius: 16))
                         .shadow(
                             color: viewModel.canLogin ? Color(hex: "3b82f6").opacity(0.4) : .clear,
                             radius: 12,
@@ -174,10 +159,10 @@ struct LoginView: View {
                     VStack(spacing: 4) {
                         Text("AI Employee iOS")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(hex: "475569"))
+                            .foregroundStyle(Color(hex: "475569"))
                         Text("Version 1.0.0")
                             .font(.system(size: 12))
-                            .foregroundColor(Color(hex: "334155"))
+                            .foregroundStyle(Color(hex: "334155"))
                     }
                     .padding(.bottom, 20)
                 }
@@ -188,4 +173,9 @@ struct LoginView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.showError)
     }
+}
+
+#Preview {
+    LoginView()
+        .environment(AuthManager.shared)
 }

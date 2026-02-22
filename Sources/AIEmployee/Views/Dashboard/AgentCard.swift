@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AgentCard: View {
     let agent: Agent
-    @ObservedObject var viewModel: AgentsViewModel
+    @Bindable var viewModel: AgentsViewModel
     @State private var isPulsing = false
 
     var body: some View {
@@ -22,8 +22,9 @@ struct AgentCard: View {
                         )
                         .frame(width: 48, height: 48)
 
-                    Text("🤖")
+                    Image(systemName: "cpu.fill")
                         .font(.system(size: 22))
+                        .foregroundStyle(.white)
                 }
 
                 // Agent Info
@@ -31,18 +32,17 @@ struct AgentCard: View {
                     HStack {
                         Text(agent.name)
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .lineLimit(1)
                         Spacer()
 
-                        // Status Badge
                         StatusBadge(agent: agent)
                     }
 
                     if let desc = agent.description, !desc.isEmpty {
                         Text(desc)
                             .font(.system(size: 13))
-                            .foregroundColor(Color.appTextSecondary)
+                            .foregroundStyle(Color.appTextSecondary)
                             .lineLimit(2)
                     }
 
@@ -50,10 +50,10 @@ struct AgentCard: View {
                         HStack(spacing: 4) {
                             Image(systemName: "cpu")
                                 .font(.system(size: 10))
-                                .foregroundColor(Color.appTextSecondary)
+                                .foregroundStyle(Color.appTextSecondary)
                             Text(model)
                                 .font(.system(size: 12))
-                                .foregroundColor(Color.appTextSecondary)
+                                .foregroundStyle(Color.appTextSecondary)
                         }
                     }
                 }
@@ -67,7 +67,6 @@ struct AgentCard: View {
                     .padding(.horizontal, 16)
 
                 HStack(spacing: 0) {
-                    // Start Button
                     AgentActionButton(
                         icon: "play.fill",
                         label: "Start",
@@ -81,7 +80,6 @@ struct AgentCard: View {
                         .background(Color.appBorder)
                         .frame(height: 24)
 
-                    // Stop Button
                     AgentActionButton(
                         icon: "stop.fill",
                         label: "Stop",
@@ -95,7 +93,6 @@ struct AgentCard: View {
                         .background(Color.appBorder)
                         .frame(height: 24)
 
-                    // Restart Button
                     AgentActionButton(
                         icon: "arrow.clockwise",
                         label: "Neustart",
@@ -118,23 +115,13 @@ struct AgentCard: View {
                         .scaleEffect(0.8)
                     Text("Wird ausgefuehrt...")
                         .font(.system(size: 12))
-                        .foregroundColor(Color.appTextSecondary)
+                        .foregroundStyle(Color.appTextSecondary)
                     Spacer()
                 }
                 .padding(.vertical, 12)
             }
         }
-        .background(Color.appCard)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    agent.isRunning
-                        ? Color.appSuccess.opacity(0.3)
-                        : Color.appBorder,
-                    lineWidth: 1
-                )
-        )
+        .glassEffect(in: .rect(cornerRadius: 16))
         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
     }
 }
@@ -160,12 +147,12 @@ struct StatusBadge: View {
 
             Text(agent.statusLabel)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(agent.statusColor)
+                .foregroundStyle(agent.statusColor)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
         .background(agent.statusColor.opacity(0.12))
-        .cornerRadius(20)
+        .clipShape(.capsule)
         .onAppear {
             isPulsing = true
         }
@@ -189,7 +176,7 @@ struct AgentActionButton: View {
                 Text(label)
                     .font(.system(size: 11, weight: .medium))
             }
-            .foregroundColor(disabled ? Color.appTextSecondary.opacity(0.4) : color)
+            .foregroundStyle(disabled ? Color.appTextSecondary.opacity(0.4) : color)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
         }

@@ -66,7 +66,6 @@ extension String {
         if let date = String.iso8601FormatterNoFraction.date(from: self) {
             return date
         }
-        // Try standard formats
         let formatters = [
             "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy-MM-dd HH:mm:ss",
@@ -118,11 +117,10 @@ extension String {
 // MARK: - View Extensions
 
 extension View {
-    func cardStyle(padding: CGFloat = 16) -> some View {
+    func glassCard(padding: CGFloat = 16) -> some View {
         self
             .padding(padding)
-            .background(Color.appCard)
-            .cornerRadius(16)
+            .glassEffect(in: .rect(cornerRadius: 16))
     }
 
     func shimmerEffect() -> some View {
