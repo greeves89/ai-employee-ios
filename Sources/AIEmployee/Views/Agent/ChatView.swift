@@ -49,7 +49,7 @@ struct ChatView: View {
                         .foregroundStyle(Color.appError)
                     Text(voiceManager.transcript)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                         .lineLimit(3)
                 }
                 .padding(12)
@@ -134,7 +134,7 @@ struct MessageBubble: View {
                 } else {
                     Text(message.content)
                         .font(.system(size: 15))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .background(message.bubbleColor)
@@ -213,7 +213,7 @@ struct InputBar: View {
             // Text Input
             TextField("Nachricht...", text: $viewModel.inputText, axis: .vertical)
                 .font(.system(size: 15))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .glassEffect(in: .rect(cornerRadius: 22))
@@ -237,6 +237,7 @@ struct InputBar: View {
                     ZStack {
                         Circle()
                             .frame(width: 44, height: 44)
+                            // Use interactive glassEffect for the mic button; pulses when recording
                             .glassEffect(in: .circle)
                             .scaleEffect(pulseAnimation && voiceManager.isRecording ? 1.15 : 1.0)
                             .animation(
@@ -284,12 +285,9 @@ struct InputBar: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
-        .overlay(
-            Rectangle()
-                .fill(Color.appBorder)
-                .frame(height: 0.5),
-            alignment: .top
-        )
+        // Glass effect on the entire input bar instead of .ultraThinMaterial + border overlay
+        .glassEffect(in: .rect(cornerRadius: 24))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
     }
 }

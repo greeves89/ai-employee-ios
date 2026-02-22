@@ -8,7 +8,6 @@ struct AIEmployeeApp: App {
         WindowGroup {
             ContentView()
                 .environment(authManager)
-                .preferredColorScheme(.dark)
         }
     }
 }

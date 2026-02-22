@@ -32,7 +32,7 @@ struct AgentCard: View {
                     HStack {
                         Text(agent.name)
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .lineLimit(1)
                         Spacer()
 
@@ -60,49 +60,53 @@ struct AgentCard: View {
             }
             .padding(16)
 
-            // Control Buttons
+            // Control Buttons — wrapped in GlassEffectContainer so they morph together
             if !viewModel.isActionInProgress(for: agent.id) {
                 Divider()
                     .background(Color.appBorder)
                     .padding(.horizontal, 16)
 
-                HStack(spacing: 0) {
-                    AgentActionButton(
-                        icon: "play.fill",
-                        label: "Start",
-                        color: Color.appSuccess,
-                        disabled: agent.isRunning
-                    ) {
-                        Task { await viewModel.startAgent(agent) }
+                GlassEffectContainer(spacing: 0) {
+                    HStack(spacing: 0) {
+                        AgentActionButton(
+                            icon: "play.fill",
+                            label: "Start",
+                            color: Color.appSuccess,
+                            disabled: agent.isRunning
+                        ) {
+                            Task { await viewModel.startAgent(agent) }
+                        }
+
+                        Divider()
+                            .background(Color.appBorder)
+                            .frame(height: 24)
+
+                        AgentActionButton(
+                            icon: "stop.fill",
+                            label: "Stop",
+                            color: Color.appError,
+                            disabled: agent.isStopped
+                        ) {
+                            Task { await viewModel.stopAgent(agent) }
+                        }
+
+                        Divider()
+                            .background(Color.appBorder)
+                            .frame(height: 24)
+
+                        AgentActionButton(
+                            icon: "arrow.clockwise",
+                            label: "Neustart",
+                            color: Color.appWarning,
+                            disabled: false
+                        ) {
+                            Task { await viewModel.restartAgent(agent) }
+                        }
                     }
-
-                    Divider()
-                        .background(Color.appBorder)
-                        .frame(height: 24)
-
-                    AgentActionButton(
-                        icon: "stop.fill",
-                        label: "Stop",
-                        color: Color.appError,
-                        disabled: agent.isStopped
-                    ) {
-                        Task { await viewModel.stopAgent(agent) }
-                    }
-
-                    Divider()
-                        .background(Color.appBorder)
-                        .frame(height: 24)
-
-                    AgentActionButton(
-                        icon: "arrow.clockwise",
-                        label: "Neustart",
-                        color: Color.appWarning,
-                        disabled: false
-                    ) {
-                        Task { await viewModel.restartAgent(agent) }
-                    }
+                    .padding(.vertical, 4)
                 }
-                .padding(.vertical, 4)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
             } else {
                 Divider()
                     .background(Color.appBorder)
@@ -151,8 +155,7 @@ struct StatusBadge: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .background(agent.statusColor.opacity(0.12))
-        .clipShape(.capsule)
+        .glassEffect(in: .capsule)
         .onAppear {
             isPulsing = true
         }

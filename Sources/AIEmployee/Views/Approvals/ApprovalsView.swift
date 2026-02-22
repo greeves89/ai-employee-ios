@@ -2,20 +2,13 @@ import SwiftUI
 
 struct ApprovalsView: View {
     @Bindable var viewModel: ApprovalsViewModel
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                MeshGradient(width: 3, height: 3, points: [
-                    [0, 0], [0.5, 0], [1, 0],
-                    [0, 0.5], [0.5, 0.5], [1, 0.5],
-                    [0, 1], [0.5, 1], [1, 1]
-                ], colors: [
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
-                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
-                ])
-                .ignoresSafeArea()
+                meshGradientBackground
+                    .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.approvals.isEmpty {
                     LoadingView(message: "Genehmigungen werden geladen...")
@@ -71,6 +64,31 @@ struct ApprovalsView: View {
             .task {
                 await viewModel.loadApprovals()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var meshGradientBackground: some View {
+        if colorScheme == .dark {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+        } else {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe"),
+                Color(hex: "bfdbfe"), Color(hex: "dbeafe"), Color(hex: "bfdbfe"),
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe")
+            ])
         }
     }
 }

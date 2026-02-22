@@ -3,20 +3,13 @@ import SwiftUI
 struct LoginView: View {
     @State private var viewModel = AuthViewModel()
     @Environment(AuthManager.self) var authManager
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         ZStack {
-            // Liquid Glass background — dark navy MeshGradient
-            MeshGradient(width: 3, height: 3, points: [
-                [0, 0], [0.5, 0], [1, 0],
-                [0, 0.5], [0.5, 0.5], [1, 0.5],
-                [0, 1], [0.5, 1], [1, 1]
-            ], colors: [
-                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
-                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
-                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
-            ])
-            .ignoresSafeArea()
+            // Adaptive MeshGradient background — dark navy in dark mode, light blue in light mode
+            meshGradientBackground
+                .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 32) {
@@ -44,11 +37,11 @@ struct LoginView: View {
                         VStack(spacing: 6) {
                             Text("AI Employee")
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
 
                             Text("Ihr KI-Assistent")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(Color(hex: "94a3b8"))
+                                .foregroundStyle(Color.appTextSecondary)
                         }
                     }
 
@@ -57,13 +50,13 @@ struct LoginView: View {
                         // Server URL
                         HStack(spacing: 12) {
                             Image(systemName: "globe")
-                                .foregroundStyle(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color.appAccent)
                                 .frame(width: 20)
                             TextField("Server-URL (z.B. https://ai.example.com)", text: $viewModel.serverURL)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .keyboardType(.URL)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                         }
                         .padding(16)
                         .glassEffect(in: .rect(cornerRadius: 14))
@@ -71,13 +64,13 @@ struct LoginView: View {
                         // Email
                         HStack(spacing: 12) {
                             Image(systemName: "envelope")
-                                .foregroundStyle(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color.appAccent)
                                 .frame(width: 20)
                             TextField("E-Mail-Adresse", text: $viewModel.email)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .keyboardType(.emailAddress)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                         }
                         .padding(16)
                         .glassEffect(in: .rect(cornerRadius: 14))
@@ -85,10 +78,10 @@ struct LoginView: View {
                         // Password
                         HStack(spacing: 12) {
                             Image(systemName: "lock")
-                                .foregroundStyle(Color(hex: "3b82f6"))
+                                .foregroundStyle(Color.appAccent)
                                 .frame(width: 20)
                             SecureField("Passwort", text: $viewModel.password)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                         }
                         .padding(16)
                         .glassEffect(in: .rect(cornerRadius: 14))
@@ -99,10 +92,10 @@ struct LoginView: View {
                     if viewModel.showError, let error = viewModel.errorMessage {
                         HStack(spacing: 10) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(Color(hex: "ef4444"))
+                                .foregroundStyle(Color.appError)
                             Text(error)
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color(hex: "ef4444"))
+                                .foregroundStyle(Color.appError)
                                 .multilineTextAlignment(.leading)
                         }
                         .padding(14)
@@ -159,10 +152,10 @@ struct LoginView: View {
                     VStack(spacing: 4) {
                         Text("AI Employee iOS")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color(hex: "475569"))
+                            .foregroundStyle(Color.appTextSecondary)
                         Text("Version 1.0.0")
                             .font(.system(size: 12))
-                            .foregroundStyle(Color(hex: "334155"))
+                            .foregroundStyle(Color.appTextSecondary)
                     }
                     .padding(.bottom, 20)
                 }
@@ -172,6 +165,31 @@ struct LoginView: View {
             viewModel.serverURL = authManager.baseURL
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.showError)
+    }
+
+    @ViewBuilder
+    private var meshGradientBackground: some View {
+        if colorScheme == .dark {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+        } else {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe"),
+                Color(hex: "bfdbfe"), Color(hex: "dbeafe"), Color(hex: "bfdbfe"),
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe")
+            ])
+        }
     }
 }
 

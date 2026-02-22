@@ -2,20 +2,13 @@ import SwiftUI
 
 struct TasksView: View {
     @Bindable var viewModel: TasksViewModel
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                MeshGradient(width: 3, height: 3, points: [
-                    [0, 0], [0.5, 0], [1, 0],
-                    [0, 0.5], [0.5, 0.5], [1, 0.5],
-                    [0, 1], [0.5, 1], [1, 1]
-                ], colors: [
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
-                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
-                ])
-                .ignoresSafeArea()
+                meshGradientBackground
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // Filter Bar
@@ -107,6 +100,31 @@ struct TasksView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var meshGradientBackground: some View {
+        if colorScheme == .dark {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+        } else {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe"),
+                Color(hex: "bfdbfe"), Color(hex: "dbeafe"), Color(hex: "bfdbfe"),
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe")
+            ])
+        }
+    }
 }
 
 // MARK: - Filter Chip
@@ -120,7 +138,7 @@ struct FilterChip: View {
         Button(action: action) {
             Text(label)
                 .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                .foregroundStyle(isSelected ? .white : Color.appTextSecondary)
+                .foregroundStyle(isSelected ? .primary : Color.appTextSecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .glassEffect(in: .capsule)
@@ -164,7 +182,7 @@ struct TaskCard: View {
                     HStack {
                         Text(task.title)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .lineLimit(2)
 
                         Spacer()

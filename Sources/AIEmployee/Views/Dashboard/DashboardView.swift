@@ -27,8 +27,23 @@ struct DashboardView: View {
             }
             .badge(notificationsVM.unreadCount > 0 ? notificationsVM.unreadCount : 0)
         }
-        .tint(Color(hex: "3b82f6"))
+        .tint(Color.appAccent)
+        .tabBarMinimizeBehavior(.onScrollDown)
         .containerBackground(.regularMaterial, for: .tabView)
+        .tabViewBottomAccessory {
+            if agentsVM.runningCount > 0 {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(Color.appSuccess)
+                        .frame(width: 8, height: 8)
+                    Text("\(agentsVM.runningCount) Agent\(agentsVM.runningCount == 1 ? "" : "en") aktiv")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.primary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+        }
         .onAppear {
             loadAllData()
         }
@@ -63,20 +78,13 @@ struct DashboardView: View {
 struct AgentListView: View {
     @Bindable var viewModel: AgentsViewModel
     @Environment(AuthManager.self) var authManager
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                MeshGradient(width: 3, height: 3, points: [
-                    [0, 0], [0.5, 0], [1, 0],
-                    [0, 0.5], [0.5, 0.5], [1, 0.5],
-                    [0, 1], [0.5, 1], [1, 1]
-                ], colors: [
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
-                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
-                ])
-                .ignoresSafeArea()
+                meshGradientBackground
+                    .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.agents.isEmpty {
                     LoadingView(message: "Agenten werden geladen...")
@@ -89,26 +97,30 @@ struct AgentListView: View {
                 } else {
                     ScrollView {
                         VStack(spacing: 0) {
-                            // Stats Header
-                            HStack(spacing: 12) {
-                                StatCard(
-                                    value: "\(viewModel.runningCount)",
-                                    label: "Aktiv",
-                                    color: Color.appSuccess,
-                                    icon: "circle.fill"
-                                )
-                                StatCard(
-                                    value: "\(viewModel.stoppedCount)",
-                                    label: "Gestoppt",
-                                    color: Color.appTextSecondary,
-                                    icon: "circle.fill"
-                                )
-                                StatCard(
-                                    value: "\(viewModel.agents.count)",
-                                    label: "Gesamt",
-                                    color: Color.appAccent,
-                                    icon: "cpu"
-                                )
+                            // Stats Header — wrapped in GlassEffectContainer so cards morph together
+                            GlassEffectContainer(spacing: 0) {
+                                HStack(spacing: 12) {
+                                    StatCard(
+                                        value: "\(viewModel.runningCount)",
+                                        label: "Aktiv",
+                                        color: Color.appSuccess,
+                                        icon: "circle.fill"
+                                    )
+                                    StatCard(
+                                        value: "\(viewModel.stoppedCount)",
+                                        label: "Gestoppt",
+                                        color: Color.appTextSecondary,
+                                        icon: "circle.fill"
+                                    )
+                                    StatCard(
+                                        value: "\(viewModel.agents.count)",
+                                        label: "Gesamt",
+                                        color: Color.appAccent,
+                                        icon: "cpu"
+                                    )
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
@@ -158,6 +170,31 @@ struct AgentListView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var meshGradientBackground: some View {
+        if colorScheme == .dark {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+        } else {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe"),
+                Color(hex: "bfdbfe"), Color(hex: "dbeafe"), Color(hex: "bfdbfe"),
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe")
+            ])
+        }
+    }
 }
 
 // MARK: - Supporting Components
@@ -176,7 +213,7 @@ struct StatCard: View {
                     .foregroundStyle(color)
                 Text(value)
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
             }
             Text(label)
                 .font(.system(size: 12, weight: .medium))
@@ -212,7 +249,7 @@ struct ErrorBanner: View {
                 .foregroundStyle(Color.appError)
             Text(message)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .lineLimit(2)
         }
         .padding(.horizontal, 16)

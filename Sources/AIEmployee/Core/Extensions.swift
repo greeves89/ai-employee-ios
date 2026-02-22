@@ -29,19 +29,41 @@ extension Color {
     }
 }
 
-// MARK: - Design System Colors
+// MARK: - Design System Colors (Adaptive — Light & Dark Mode)
 
 extension Color {
-    static let appBackground = Color(hex: "0a0f1e")
-    static let appCard = Color(hex: "131929")
-    static let appCardSecondary = Color(hex: "1e293b")
-    static let appAccent = Color(hex: "3b82f6")
-    static let appSuccess = Color(hex: "22c55e")
-    static let appError = Color(hex: "ef4444")
-    static let appWarning = Color(hex: "f59e0b")
-    static let appTextPrimary = Color.white
-    static let appTextSecondary = Color(hex: "94a3b8")
-    static let appBorder = Color(hex: "1e293b")
+    /// Primary background — adapts to system appearance
+    static var appBackground: Color { Color(.systemGroupedBackground) }
+
+    /// Card / surface background — adapts to system appearance
+    static var appCard: Color { Color(.secondarySystemGroupedBackground) }
+
+    /// Secondary card — adapts to system appearance
+    static var appCardSecondary: Color { Color(.tertiarySystemGroupedBackground) }
+
+    /// Primary text — adapts to system appearance
+    static var appText: Color { Color(.label) }
+
+    /// Secondary text — adapts to system appearance
+    static var appTextSecondary: Color { Color(.secondaryLabel) }
+
+    /// Primary text (alias for legacy compatibility)
+    static var appTextPrimary: Color { Color(.label) }
+
+    /// Separator / border — adapts to system appearance
+    static var appBorder: Color { Color(.separator) }
+
+    /// Accent blue — works well in both modes
+    static var appAccent: Color { Color(hex: "3b82f6") }
+
+    /// Semantic success green
+    static var appSuccess: Color { Color(hex: "22c55e") }
+
+    /// Semantic error red
+    static var appError: Color { Color(hex: "ef4444") }
+
+    /// Semantic warning amber
+    static var appWarning: Color { Color(hex: "f59e0b") }
 }
 
 // MARK: - String Date Extensions

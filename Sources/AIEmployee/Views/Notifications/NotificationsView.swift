@@ -2,20 +2,13 @@ import SwiftUI
 
 struct NotificationsView: View {
     @Bindable var viewModel: NotificationsViewModel
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                MeshGradient(width: 3, height: 3, points: [
-                    [0, 0], [0.5, 0], [1, 0],
-                    [0, 0.5], [0.5, 0.5], [1, 0.5],
-                    [0, 1], [0.5, 1], [1, 1]
-                ], colors: [
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
-                    Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
-                    Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
-                ])
-                .ignoresSafeArea()
+                meshGradientBackground
+                    .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.notifications.isEmpty {
                     LoadingView(message: "Benachrichtigungen werden geladen...")
@@ -92,6 +85,31 @@ struct NotificationsView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var meshGradientBackground: some View {
+        if colorScheme == .dark {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e"),
+                Color(hex: "0f1b35"), Color(hex: "1a2744"), Color(hex: "0f1b35"),
+                Color(hex: "0a0f1e"), Color(hex: "0f1b35"), Color(hex: "0a0f1e")
+            ])
+        } else {
+            MeshGradient(width: 3, height: 3, points: [
+                [0, 0], [0.5, 0], [1, 0],
+                [0, 0.5], [0.5, 0.5], [1, 0.5],
+                [0, 1], [0.5, 1], [1, 1]
+            ], colors: [
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe"),
+                Color(hex: "bfdbfe"), Color(hex: "dbeafe"), Color(hex: "bfdbfe"),
+                Color(hex: "e0f2fe"), Color(hex: "bfdbfe"), Color(hex: "e0f2fe")
+            ])
+        }
+    }
 }
 
 // MARK: - Section Header
@@ -143,7 +161,7 @@ struct NotificationRow: View {
                 HStack {
                     Text(notification.title)
                         .font(.system(size: 15, weight: isUnread ? .semibold : .regular))
-                        .foregroundStyle(isUnread ? .white : Color.appTextSecondary)
+                        .foregroundStyle(isUnread ? .primary : Color.appTextSecondary)
                         .lineLimit(2)
 
                     Spacer()
@@ -165,7 +183,7 @@ struct NotificationRow: View {
                 if !notification.formattedTime.isEmpty {
                     Text(notification.formattedTime)
                         .font(.system(size: 12))
-                        .foregroundStyle(Color(hex: "475569"))
+                        .foregroundStyle(Color.appTextSecondary)
                 }
             }
         }
