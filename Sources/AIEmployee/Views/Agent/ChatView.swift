@@ -24,7 +24,7 @@ struct ChatView: View {
                         }
 
                         ForEach(viewModel.messages) { message in
-                            MessageBubble(message: message)
+                            MessageBubble(message: message, agentId: agent.id)
                                 .id(message.id)
                         }
                     }
@@ -112,6 +112,7 @@ struct ChatView: View {
 
 struct MessageBubble: View {
     let message: ChatMessage
+    let agentId: String
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -132,19 +133,28 @@ struct MessageBubble: View {
                 if message.isTypingIndicator {
                     TypingIndicator()
                 } else {
-                    Text(message.content)
-                        .font(.system(size: 15))
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(message.bubbleColor)
-                        .clipShape(.rect(
-                            topLeadingRadius: 18,
-                            bottomLeadingRadius: message.isUser ? 18 : 4,
-                            bottomTrailingRadius: message.isUser ? 4 : 18,
-                            topTrailingRadius: 18
-                        ))
-                        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
+                    VStack(alignment: .leading, spacing: 8) {
+                        if !message.content.isEmpty {
+                            Text(message.content)
+                                .font(.system(size: 15))
+                                .foregroundStyle(.primary)
+                        }
+                        if let attachments = message.attachments, !attachments.isEmpty {
+                            ForEach(attachments) { attachment in
+                                AttachmentRow(attachment: attachment, agentId: agentId)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(message.bubbleColor)
+                    .clipShape(.rect(
+                        topLeadingRadius: 18,
+                        bottomLeadingRadius: message.isUser ? 18 : 4,
+                        bottomTrailingRadius: message.isUser ? 4 : 18,
+                        topTrailingRadius: 18
+                    ))
+                    .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                 }
 
                 if !message.formattedTime.isEmpty {
@@ -209,7 +219,7 @@ struct InputBar: View {
     @State private var pulseAnimation = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .bottom, spacing: 10) {
             // Text Input
             TextField("Nachricht...", text: $viewModel.inputText, axis: .vertical)
                 .font(.system(size: 15))
@@ -217,7 +227,9 @@ struct InputBar: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .glassEffect(in: .rect(cornerRadius: 22))
-                .lineLimit(4)
+                .lineLimit(1...10)
+                .frame(minHeight: 40, maxHeight: 200)
+                .animation(.easeOut(duration: 0.15), value: viewModel.inputText)
 
             // Voice Button
             if voiceManager.isAvailable {

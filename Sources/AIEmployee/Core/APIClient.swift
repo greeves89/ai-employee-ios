@@ -58,6 +58,16 @@ struct User: Codable, Identifiable {
     }
 }
 
+struct ChatHistoryResponse: Codable {
+    let messages: [ChatMessage]
+    let hasMore: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case messages
+        case hasMore = "has_more"
+    }
+}
+
 struct MessageResponse: Codable {
     let id: String?
     let role: String?
@@ -89,6 +99,13 @@ final class APIClient {
         config.httpCookieAcceptPolicy = .always
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 60
+        // Shared URLCache (50 MB memory / 500 MB disk) so repeated GETs reuse cached bodies.
+        config.urlCache = URLCache(
+            memoryCapacity: 50 * 1024 * 1024,
+            diskCapacity: 500 * 1024 * 1024,
+            diskPath: "AIEmployee.urlcache"
+        )
+        config.requestCachePolicy = .useProtocolCachePolicy
         session = URLSession(configuration: config)
     }
 
@@ -230,7 +247,33 @@ final class APIClient {
 
     func getChatHistory(agentId: String) async throws -> [ChatMessage] {
         let request = try makeRequest("/api/v1/agents/\(agentId)/chat/history")
-        return try await perform(request)
+        // History endpoint returns `{ "messages": [...], "has_more": Bool }`.
+        let response: ChatHistoryResponse = try await perform(request)
+        return response.messages
+    }
+
+    /// Downloads a file from the agent's workspace. Used by AttachmentCache.
+    func downloadFile(agentId: String, path: String) async throws -> Data {
+        guard !baseURL.isEmpty else { throw APIError.invalidURL }
+        var components = URLComponents(string: "\(baseURL)/api/v1/agents/\(agentId)/files/download")
+        components?.queryItems = [URLQueryItem(name: "path", value: path)]
+        guard let url = components?.url else { throw APIError.invalidURL }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let http = response as? HTTPURLResponse else { throw APIError.unknown }
+            if http.statusCode == 401 { throw APIError.notAuthenticated }
+            if http.statusCode >= 400 {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                throw APIError.serverError(http.statusCode, body)
+            }
+            return data
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.networkError(error.localizedDescription)
+        }
     }
 
     // MARK: - Tasks
